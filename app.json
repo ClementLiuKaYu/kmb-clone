@@ -17,5 +17,17 @@
     ],
     "name": "kmb-clone",
     "slug": "kmb-clone"
+  },
+  "android": {
+    "config": {
+      "googleMaps": {
+        "apiKey": "AIzaSyDIusb6NJWczR6-7mTnLqVbmzHh4p5Mh3A"
+      }
+    }
+  },
+  "ios": {
+    "config": {
+      "googleMapsApiKey": "AIzaSyDIusb6NJWczR6-7mTnLqVbmzHh4p5Mh3A"
+    }
   }
 }

@@ -1,95 +1,103 @@
+import { type RouteStop, useRouteStopList, useStop, useEta } from "@/api/kmb";
 import { Link } from "expo-router";
-import React from "react";
-import { Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import React, { useEffect, useState } from "react";
+import { Text, View, FlatList, Pressable } from "react-native";
+import { AlertCircleIcon } from "@/components/Icons";
+import LoadingScreen from "@/components/LoadingScreen";
+import ErrorScreen from "@/components/ErrorScreen";
 
-export default function Page() {
+export default function HomePage() {
   return (
     <View className="flex flex-1">
-      <Header />
       <Content />
-      <Footer />
     </View>
   );
 }
 
-function Content() {
+const Content = () => {
+  const stop1 = "BFA3460955AC820C";
+  const stop2 = "5FB1FCAF80F3D97D";
+
+  const { data, error, isFetching } = useRouteStopList();
+
+  if (error) return <ErrorScreen />;
+  if (!data && isFetching) return <LoadingScreen />;
+
   return (
     <View className="flex-1">
-      <View className="py-12 md:py-24 lg:py-32 xl:py-48">
-        <View className="container px-4 md:px-6">
-          <View className="flex flex-col items-center gap-4 text-center">
-            <Text
-              role="heading"
-              className="text-3xl text-center native:text-5xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl"
-            >
-              Welcome to Project ACME
-            </Text>
-            <Text className="mx-auto max-w-[700px] text-lg text-center text-gray-500 md:text-xl dark:text-gray-400">
-              Discover and collaborate on amce. Explore our services now.
-            </Text>
+      <FlatList
+        data={data.filter(
+          (route) => route.stop == stop1 || route.stop == stop2
+        )}
+        renderItem={({ item: routeStop }) => <RouteListItem {...routeStop} />}
+      />
+    </View>
+  );
+};
 
-            <View className="gap-4">
-              <Link
-                suppressHighlighting
-                className="flex h-9 items-center justify-center overflow-hidden rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 active:bg-gray-400/90 web:focus-visible:outline-none web:focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
-                href="#"
-              >
-                Explore
-              </Link>
+const RouteListItem = (routeStop: RouteStop) => {
+  const { route, stop, service_type: serviceType, bound } = routeStop;
+  const { data: stopData } = useStop(stop);
+  const {
+    data: etaData,
+    isError: isErrorEta,
+    isSuccess: isSuccessEta,
+  } = useEta({
+    route,
+    stop,
+    serviceType,
+  });
+
+  const [etaClosest, setEtaClosest] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isSuccessEta) {
+      const etaList = etaData
+        // filter eta of right direction
+        .filter((eta) => eta.dir == bound)
+        // sort by eta_seq
+        .sort((a, b) => a.eta_seq - b.eta_seq);
+      setEtaClosest(() => {
+        if (etaList[0].eta == null) return null;
+        return Math.round((Date.parse(etaList[0].eta) - Date.now()) / 60000);
+      });
+    }
+  }, [isSuccessEta]);
+
+  return (
+    <Link
+      push
+      href={`/routeStop/${route}/${stop}/${bound}/${serviceType}`}
+      asChild
+    >
+      <Pressable className="flex flex-row h-20 border-b border-gray-500 items-center px-2 justify-between">
+        <View className="flex flex-row items-center justify-between gap-2">
+          <Text className="text-2xl font-semibold w-20">{routeStop.route}</Text>
+          <View>
+            <View className="flex flex-row items-center">
+              <Text className="text-xs text-gray-500">To </Text>
+              <Text className="text-xl text-semibold">
+                {etaData?.find((eta) => eta.dir == bound)?.dest_tc ?? "-"}
+              </Text>
             </View>
+            <Text className="text-md text-gray-700">
+              {stopData?.name_tc ?? "-"}
+            </Text>
           </View>
         </View>
-      </View>
-    </View>
-  );
-}
-
-function Header() {
-  const { top } = useSafeAreaInsets();
-  return (
-    <View style={{ paddingTop: top }}>
-      <View className="px-4 lg:px-6 h-14 flex items-center flex-row justify-between ">
-        <Link className="font-bold flex-1 items-center justify-center" href="#">
-          ACME
-        </Link>
-        <View className="flex flex-row gap-4 sm:gap-6">
-          <Link
-            className="text-md font-medium hover:underline web:underline-offset-4"
-            href="#"
-          >
-            About
-          </Link>
-          <Link
-            className="text-md font-medium hover:underline web:underline-offset-4"
-            href="#"
-          >
-            Product
-          </Link>
-          <Link
-            className="text-md font-medium hover:underline web:underline-offset-4"
-            href="#"
-          >
-            Pricing
-          </Link>
+        <View>
+          {etaData || isErrorEta ? (
+            <>
+              <Text className="text-blue-700 text-2xl">
+                {etaClosest ?? "-"}
+              </Text>
+              <Text className="text-gray-500 text-xs">mins</Text>
+            </>
+          ) : (
+            <AlertCircleIcon />
+          )}
         </View>
-      </View>
-    </View>
+      </Pressable>
+    </Link>
   );
-}
-
-function Footer() {
-  const { bottom } = useSafeAreaInsets();
-  return (
-    <View
-      className="flex shrink-0 bg-gray-100 native:hidden"
-      style={{ paddingBottom: bottom }}
-    >
-      <View className="py-6 flex-1 items-start px-4 md:px-6 ">
-        <Text className={"text-center text-gray-700"}>
-          © {new Date().getFullYear()} Me
-        </Text>
-      </View>
-    </View>
-  );
-}
+};
