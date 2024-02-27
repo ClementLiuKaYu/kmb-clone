@@ -48,7 +48,7 @@ export default function MapPage() {
           const etaMins =
             data.eta == null
               ? null
-              : Math.round((Date.parse(etaList[0].eta) - Date.now()) / 60000);
+              : Math.round((Date.parse(data.eta) - Date.now()) / 60000);
           return { etaMins, ...data };
         })
       );
