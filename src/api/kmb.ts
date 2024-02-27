@@ -3,29 +3,29 @@ import axios from "axios";
 
 const baseUrl = "https://data.etabus.gov.hk/v1/transport/kmb";
 
-export type Route = {
-  route: string;
-  bound: "I" | "O";
-  service_type: String;
-  orig_en: string;
-  orig_tc: string;
-  orig_sc: string;
-  dest_en: string;
-  dest_tc: string;
-  dest_sc: string;
-};
+// export type Route = {
+//   route: string;
+//   bound: "I" | "O";
+//   service_type: String;
+//   orig_en: string;
+//   orig_tc: string;
+//   orig_sc: string;
+//   dest_en: string;
+//   dest_tc: string;
+//   dest_sc: string;
+// };
 
-export const useRouteList = () => {
-  return useQuery({
-    queryKey: ["routeList"],
-    queryFn: async () => {
-      const { data } = await axios.get(`${baseUrl}/route`);
-      return new Map<string, Route>(
-        data.data.map((route: Route) => [route.route, route])
-      );
-    },
-  });
-};
+// export const useRouteList = () => {
+//   return useQuery({
+//     queryKey: ["routeList"],
+//     queryFn: async () => {
+//       const { data } = await axios.get(`${baseUrl}/route`);
+//       return new Map<string, Route>(
+//         data.data.map((route: Route) => [route.route, route])
+//       );
+//     },
+//   });
+// };
 
 export type Stop = {
   stop: string;
@@ -39,9 +39,9 @@ export type Stop = {
 export const useStop = (stopId) => {
   return useQuery({
     queryKey: ["stop", stopId],
-    queryFn: async () => {
+    queryFn: async (): Promise<Stop> => {
       const { data } = await axios.get(`${baseUrl}/stop/${stopId}`);
-      return data.data as Stop;
+      return data.data;
     },
   });
 };
@@ -49,11 +49,9 @@ export const useStop = (stopId) => {
 export const useStopList = () => {
   return useQuery({
     queryKey: ["stopList"],
-    queryFn: async () => {
+    queryFn: async (): Promise<Stop[]> => {
       const { data } = await axios.get(`${baseUrl}/stop`);
-      return new Map<string, Stop>(
-        data.data.map((stop: Stop) => [stop.stop, stop])
-      );
+      return data.data;
     },
   });
 };
@@ -97,11 +95,11 @@ const ETA_REVALIDATE = 10000;
 export const useEta = ({ stop, route, serviceType }) => {
   return useQuery({
     queryKey: ["eta", stop, route, serviceType],
-    queryFn: async () => {
+    queryFn: async (): Promise<Eta[]> => {
       const { data } = await axios.get(
         `${baseUrl}/eta/${stop}/${route}/${serviceType}`
       );
-      return data.data as [Eta];
+      return data.data;
     },
     refetchInterval: ETA_REVALIDATE,
   });
@@ -110,9 +108,9 @@ export const useEta = ({ stop, route, serviceType }) => {
 export const useStopEta = (stopId) => {
   return useQuery({
     queryKey: ["stop-eta", stopId],
-    queryFn: async () => {
+    queryFn: async (): Promise<Eta[]> => {
       const { data } = await axios.get(`${baseUrl}/stop-eta/${stopId}`);
-      return data.data as [Eta];
+      return data.data;
     },
     refetchInterval: ETA_REVALIDATE,
   });

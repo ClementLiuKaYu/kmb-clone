@@ -14,7 +14,13 @@
           "origin": "https://n"
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        }
+      ]
     ],
     "name": "kmb-clone",
     "slug": "kmb-clone"
