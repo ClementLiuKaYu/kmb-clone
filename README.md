@@ -1,9 +1,17 @@
-# Expo Router and Tailwind CSS
-
-Use [Expo Router](https://docs.expo.dev/router/introduction/) with [Nativewind](https://www.nativewind.dev/v4/overview/) styling.
+# KMB-CLONE
 
 ## 🚀 How to use
 
+Start by installing dependencies:
+
 ```sh
-npx create-expo-app -e with-router-tailwind
+npm i
 ```
+
+Start the server by running:
+
+```sh
+npm run start
+```
+
+Then choose between Android or iOS, or use expo go on your phone.
