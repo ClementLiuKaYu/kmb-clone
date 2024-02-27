@@ -20,7 +20,7 @@ const Content = () => {
   const stop1 = "BFA3460955AC820C";
   const stop2 = "5FB1FCAF80F3D97D";
 
-  const { data, error, isFetching } = useRouteStopList();
+  const { data, error, isFetching, refetch } = useRouteStopList();
 
   if (error) return <ErrorScreen />;
   if (!data && isFetching) return <LoadingScreen />;
@@ -32,6 +32,10 @@ const Content = () => {
           (route) => route.stop == stop1 || route.stop == stop2
         )}
         renderItem={({ item: routeStop }) => <RouteListItem {...routeStop} />}
+        refreshing={isFetching}
+        onRefresh={() => {
+          refetch();
+        }}
       />
     </View>
   );
