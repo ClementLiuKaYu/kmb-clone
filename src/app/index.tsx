@@ -5,6 +5,8 @@ import { Text, View, FlatList, Pressable } from "react-native";
 import { AlertCircleIcon } from "@/components/Icons";
 import LoadingScreen from "@/components/LoadingScreen";
 import ErrorScreen from "@/components/ErrorScreen";
+import { useTranslation } from "react-i18next";
+import { getLanguageKMB } from "@/i18n";
 
 export default function HomePage() {
   return (
@@ -36,6 +38,8 @@ const Content = () => {
 };
 
 const RouteListItem = (routeStop: RouteStop) => {
+  const { t } = useTranslation();
+  const lng = getLanguageKMB();
   const { route, stop, service_type: serviceType, bound } = routeStop;
   const { data: stopData } = useStop(stop);
   const {
@@ -75,13 +79,18 @@ const RouteListItem = (routeStop: RouteStop) => {
           <Text className="text-2xl font-semibold w-20">{routeStop.route}</Text>
           <View>
             <View className="flex flex-row items-center">
-              <Text className="text-xs text-gray-500">To </Text>
-              <Text className="text-xl text-semibold">
-                {etaData?.find((eta) => eta.dir == bound)?.dest_tc ?? "-"}
+              <Text className="text-xs text-gray-500">{t("going")}</Text>
+              <Text
+                className="text-lg text-semibold max-w-64"
+                numberOfLines={1}
+              >
+                {etaData
+                  ? etaData.find((eta) => eta.dir == bound)[`dest_${lng}`]
+                  : "-"}
               </Text>
             </View>
-            <Text className="text-md text-gray-700">
-              {stopData?.name_tc ?? "-"}
+            <Text className="text-gray-700 text-sm">
+              {stopData ? stopData[`name_${lng}`] : "-"}
             </Text>
           </View>
         </View>
@@ -91,7 +100,7 @@ const RouteListItem = (routeStop: RouteStop) => {
               <Text className="text-blue-700 text-2xl">
                 {etaClosest ?? "-"}
               </Text>
-              <Text className="text-gray-500 text-xs">mins</Text>
+              <Text className="text-gray-500 text-xs">{t("min")}</Text>
             </>
           ) : (
             <AlertCircleIcon />

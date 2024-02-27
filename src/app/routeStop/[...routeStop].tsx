@@ -5,8 +5,13 @@ import { Eta, useEta, useStop } from "@/api/kmb";
 import LoadingScreen from "@/components/LoadingScreen";
 import { useEffect, useState } from "react";
 import ErrorScreen from "@/components/ErrorScreen";
+import { useTranslation } from "react-i18next";
+import { getLanguageKMB } from "@/i18n";
 
 export default function MapPage() {
+  const { t } = useTranslation();
+  const lng = getLanguageKMB();
+
   const {
     routeStop: [route, stop, bound, serviceType],
   } = useLocalSearchParams();
@@ -15,6 +20,7 @@ export default function MapPage() {
     data: stopData,
     isError: isStopError,
     isFetching: isStopFetching,
+    isSuccess: isStopSuccess,
   } = useStop(stop);
 
   const {
@@ -51,15 +57,15 @@ export default function MapPage() {
 
   if (isStopFetching || (isEtaFetching && !etaData)) return <LoadingScreen />;
 
-  if (isStopError) return <ErrorScreen />;
+  if (!isStopSuccess || isStopError) return <ErrorScreen />;
 
   return (
     <View className="flex-1">
       <MapView
         provider={PROVIDER_GOOGLE}
         region={{
-          latitude: stopData.lat,
-          longitude: stopData.long,
+          latitude: Number(stopData.lat),
+          longitude: Number(stopData.long),
           latitudeDelta: 0.005,
           longitudeDelta: 0.005,
         }}
@@ -67,11 +73,14 @@ export default function MapPage() {
       >
         <Marker
           title={stopData.name_tc}
-          coordinate={{ latitude: stopData.lat, longitude: stopData.long }}
+          coordinate={{
+            latitude: Number(stopData.lat),
+            longitude: Number(stopData.long),
+          }}
         />
       </MapView>
       <View className="border-t-4 border-red-500 flex flex-col p-6">
-        <Text className="text-2xl pb-4">{stopData.name_tc}</Text>
+        <Text className="text-2xl pb-4">{stopData[`name_${lng}`]}</Text>
         {etas.map((eta, i) => {
           return (
             <View
@@ -82,9 +91,9 @@ export default function MapPage() {
                 <Text className="text-blue-500 text-2xl">
                   {eta.etaMins ?? "-"}
                 </Text>{" "}
-                mins
+                {t("min")}
               </Text>
-              <Text className="text-xl text-gray-500">{eta.rmk_tc}</Text>
+              <Text className="text-xl text-gray-500">{eta[`rmk_${lng}`]}</Text>
             </View>
           );
         })}

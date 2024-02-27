@@ -13,7 +13,8 @@
         {
           "origin": "https://n"
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "name": "kmb-clone",
     "slug": "kmb-clone"
